@@ -15,6 +15,7 @@ app.use(
     credentials: true,
   }),
 );
+
 app.use(express.json());
 
 cloudinary.config({
@@ -30,12 +31,15 @@ let pdfCollection;
 const connectDB = async () => {
   try {
     const client = await MongoClient.connect(process.env.MONGODB_URL);
+
     db = client.db();
+
     usersCollection = db.collection("users");
     pdfCollection = db.collection("pdfs");
+
     console.log("✅ MongoDB Connected Successfully");
   } catch (error) {
-    console.error(`❌ MongoDB Connection Error: ${error.message}`);
+    console.error(❌ MongoDB Connection Error: ${error.message});
     process.exit(1);
   }
 };
@@ -45,7 +49,9 @@ const setupAdmin = async () => {
     const adminEmail = process.env.ADMIN_EMAIL || "admin@gmail.com";
     const adminPassword = process.env.ADMIN_PASSWORD || "admin@12345";
 
-    const adminExists = await usersCollection.findOne({ email: adminEmail });
+    const adminExists = await usersCollection.findOne({
+      email: adminEmail,
+    });
 
     if (adminExists) {
       console.log("\n✅ Admin already exists");
@@ -61,11 +67,12 @@ const setupAdmin = async () => {
     };
 
     await usersCollection.insertOne(admin);
+
     console.log("\n✅ Admin created successfully");
     console.log(`   Email: ${admin.email}`);
     console.log(`   Password: ${admin.password}`);
   } catch (error) {
-    console.error(`❌ Error creating admin: ${error.message}`);
+    console.error(❌ Error creating admin: ${error.message});
   }
 };
 
@@ -80,10 +87,15 @@ app.post("/api/auth/login", async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password required" });
+      return res.status(400).json({
+        message: "Email and password required",
+      });
     }
 
-    const user = await usersCollection.findOne({ email, role: "admin" });
+    const user = await usersCollection.findOne({
+      email,
+      role: "admin",
+    });
 
     if (user && user.password === password) {
       res.json({
@@ -93,15 +105,22 @@ app.post("/api/auth/login", async (req, res) => {
         message: "Login successful",
       });
     } else {
-      res.status(401).json({ message: "Invalid admin credentials" });
+      res.status(401).json({
+        message: "Invalid admin credentials",
+      });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 });
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+
+const upload = multer({
+  storage,
+});
 
 const uploadToCloudinary = (fileBuffer) => {
   return new Promise((resolve, reject) => {
@@ -112,9 +131,11 @@ const uploadToCloudinary = (fileBuffer) => {
       },
       (error, result) => {
         if (error) return reject(error);
+
         resolve(result);
       },
     );
+
     streamifier.createReadStream(fileBuffer).pipe(stream);
   });
 };
@@ -129,16 +150,23 @@ const encodeId = (id) => {
 
 const decodeId = (encodedId) => {
   let base64 = encodedId.replace(/-/g, "+").replace(/_/g, "/");
+
   while (base64.length % 4) {
     base64 += "=";
   }
+
   return Buffer.from(base64, "base64").toString("utf8");
 };
 
 app.post("/api/pdf/upload", upload.single("pdf"), async (req, res) => {
   try {
     const file = req.file;
-    if (!file) return res.status(400).json({ message: "No PDF file uploaded" });
+
+    if (!file) {
+      return res.status(400).json({
+        message: "No PDF file uploaded",
+      });
+    }
 
     const result = await uploadToCloudinary(file.buffer);
 
@@ -148,15 +176,24 @@ app.post("/api/pdf/upload", upload.single("pdf"), async (req, res) => {
     };
 
     const insertResult = await pdfCollection.insertOne(pdfDoc);
+
     const encodedId = encodeId(insertResult.insertedId);
 
-    const displayLink = `dakhila-ldtax-gov-bd.online/dakhila-print/${encodedId}`;
-    const actualLink = `${process.env.FRONTEND_URL}/dakhila-print/${encodedId}`;
+    const displayLink = https://dakhila-ldtax-gov-bd.online/dakhila-print/${encodedId};
 
-    const qrCodeData = await QRCode.toDataURL(displayLink);
+    const actualLink = ${process.env.FRONTEND_URL}/dakhila-print/${encodedId};
+
+    const qrText = `${displayLink}
+
+ভূমি উন্নয়ন কর:
+Dakhila`;
+
+    const qrCodeData = await QRCode.toDataURL(qrText);
 
     await pdfCollection.updateOne(
-      { _id: insertResult.insertedId },
+      {
+        _id: insertResult.insertedId,
+      },
       {
         $set: {
           qrCode: qrCodeData,
@@ -176,23 +213,34 @@ app.post("/api/pdf/upload", upload.single("pdf"), async (req, res) => {
       encodedId: encodedId,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 });
 
 app.get("/dakhila-print/:encodedId", async (req, res) => {
   try {
     const encodedId = req.params.encodedId;
-    const redirectUrl = `${process.env.FRONTEND_URL}/dakhila-print/${encodedId}`;
+
+    const redirectUrl = ${process.env.FRONTEND_URL}/dakhila-print/${encodedId};
+
     res.redirect(301, redirectUrl);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 });
 
 app.get("/api/pdf/all", async (req, res) => {
   try {
-    const pdfs = await pdfCollection.find({}).sort({ createdAt: -1 }).toArray();
+    const pdfs = await pdfCollection
+      .find({})
+      .sort({
+        createdAt: -1,
+      })
+      .toArray();
 
     res.json({
       message: "PDFs fetched successfully",
@@ -200,13 +248,16 @@ app.get("/api/pdf/all", async (req, res) => {
       pdfs: pdfs,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 });
 
 app.delete("/api/pdf/:encodedId", async (req, res) => {
   try {
     const encodedId = req.params.encodedId;
+
     const decodedId = decodeId(encodedId);
 
     const result = await pdfCollection.deleteOne({
@@ -214,20 +265,25 @@ app.delete("/api/pdf/:encodedId", async (req, res) => {
     });
 
     if (result.deletedCount === 0) {
-      return res.status(404).json({ message: "PDF not found" });
+      return res.status(404).json({
+        message: "PDF not found",
+      });
     }
 
     res.json({
       message: "PDF deleted successfully",
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 });
 
 app.get("/api/pdf/:encodedId", async (req, res) => {
   try {
     const encodedId = req.params.encodedId;
+
     const decodedId = decodeId(encodedId);
 
     const pdf = await pdfCollection.findOne({
@@ -235,14 +291,18 @@ app.get("/api/pdf/:encodedId", async (req, res) => {
     });
 
     if (!pdf) {
-      return res.status(404).json({ message: "PDF not found" });
+      return res.status(404).json({
+        message: "PDF not found",
+      });
     }
 
     res.json({
       pdfUrl: pdf.pdfUrl,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 });
 
@@ -252,11 +312,14 @@ const startServer = async () => {
   await connectDB();
 
   app.listen(PORT, async () => {
-    console.log(`\n🚀 Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-    console.log(`\n👤 Admin Setup:`);
+    console.log(\n🚀 Server running on port ${PORT});
+    console.log(Environment: ${process.env.NODE_ENV || "development"});
+
+    console.log(\n👤 Admin Setup:);
+
     await setupAdmin();
-    console.log(`\n✨ Server is ready!`);
+
+    console.log(\n✨ Server is ready!);
   });
 };
 
