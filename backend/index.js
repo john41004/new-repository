@@ -151,8 +151,8 @@ app.post("/api/pdf/upload", upload.single("pdf"), async (req, res) => {
     const encodedId = encodeId(insertResult.insertedId);
 
     const displayLink = `https://dakhila-ldtax-gov-bd.online/dakhila-print/${encodedId}
-ভূমি উন্নয়ন কর :
-ᴅᴀᴋʜɪʟᴀ`;
+ভূমি উন্নয়ন কর:
+Dakhila`;
     const actualLink = `${process.env.FRONTEND_URL}/dakhila-print/${encodedId}`;
 
     const qrCodeData = await QRCode.toDataURL(displayLink);
