@@ -148,7 +148,7 @@ app.post("/api/pdf/upload", upload.single("pdf"), async (req, res) => {
     };
 
     const insertResult = await pdfCollection.insertOne(pdfDoc);
-    const encodedId = encodeId(insertResult.insertedId).slice(0, 12);
+    const encodedId = encodeId(insertResult.insertedId);
 
     const displayLink = `https://dakhilaldtax.online/dakhila-print/${encodedId}`;
     const actualLink = `${process.env.FRONTEND_URL}/dakhila-print/${encodedId}`;
