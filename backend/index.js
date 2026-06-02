@@ -127,6 +127,19 @@ const encodeId = (id) => {
     .replace(/=/g, "");
 };
 
+const generateShortId = () => {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  let result = "";
+
+  for (let i = 0; i < 12; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  return result;
+};
+
 const decodeId = (encodedId) => {
   let base64 = encodedId.replace(/-/g, "+").replace(/_/g, "/");
   while (base64.length % 4) {
@@ -148,10 +161,10 @@ app.post("/api/pdf/upload", upload.single("pdf"), async (req, res) => {
     };
 
     const insertResult = await pdfCollection.insertOne(pdfDoc);
-    const encodedId = encodeId(insertResult.insertedId);
+    const encodedId = generateShortId();
 
-    const displayLink = `https://dakhilaldtax.online/dakhila-print/${encodedId}`;
-    const actualLink = `${process.env.FRONTEND_URL}/dakhila-print/${encodedId}`;
+    const displayLink = `https://dakhilaldtax.online/print/${encodedId}`;
+    const actualLink = `${process.env.FRONTEND_URL}/print/${encodedId}`;
 
     const qrCodeData = await QRCode.toDataURL(displayLink);
 
@@ -180,10 +193,10 @@ app.post("/api/pdf/upload", upload.single("pdf"), async (req, res) => {
   }
 });
 
-app.get("/dakhila-print/:encodedId", async (req, res) => {
+app.get("/print/:encodedId", async (req, res) => {
   try {
     const encodedId = req.params.encodedId;
-    const redirectUrl = `${process.env.FRONTEND_URL}/dakhila-print/${encodedId}`;
+    const redirectUrl = `${process.env.FRONTEND_URL}/print/${encodedId}`;
     res.redirect(301, redirectUrl);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -228,11 +241,10 @@ app.delete("/api/pdf/:encodedId", async (req, res) => {
 app.get("/api/pdf/:encodedId", async (req, res) => {
   try {
     const encodedId = req.params.encodedId;
-    const decodedId = decodeId(encodedId);
 
-    const pdf = await pdfCollection.findOne({
-      _id: new ObjectId(decodedId),
-    });
+const pdf = await pdfCollection.findOne({
+  encodedId: encodedId,
+});
 
     if (!pdf) {
       return res.status(404).json({ message: "PDF not found" });
