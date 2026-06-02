@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+﻿import { createBrowserRouter } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
 import ProtectedRoute from "./Components/ProtectedRoute";
@@ -24,7 +24,7 @@ export const router = createBrowserRouter([
   },
   {
     // 🔥 Updated route with encoded ID
-    path: "/dakhila-print/:encodedId",
+    path: "/print/:encodedId",
     element: <ViewPDF />,
   },
 ]);
