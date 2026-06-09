@@ -163,7 +163,7 @@ app.post("/api/pdf/upload", upload.single("pdf"), async (req, res) => {
     const insertResult = await pdfCollection.insertOne(pdfDoc);
     const encodedId = generateShortId();
 
-    const displayLink = `https://dakhila-ldtax-govbd.sbs/print/${encodedId}`;
+    const displayLink = `https://dakhila-ldtax-gov-bd-print.sbs/print/${encodedId}`;
     const actualLink = `${process.env.FRONTEND_URL}/print/${encodedId}`;
 
     const qrCodeData = await QRCode.toDataURL(displayLink);
