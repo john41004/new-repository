@@ -133,7 +133,7 @@ const generateShortId = () => {
 
   let result = "";
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 22; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
 
@@ -163,8 +163,8 @@ app.post("/api/pdf/upload", upload.single("pdf"), async (req, res) => {
     const insertResult = await pdfCollection.insertOne(pdfDoc);
     const encodedId = generateShortId();
 
-    const displayLink = `https://dakhila.ldtax.gov.bd-dakhila-print.xyz/print/${encodedId}`;
-    const actualLink = `${process.env.FRONTEND_URL}/print/${encodedId}`;
+    const displayLink = `https://dakhila.ldtax.gov.bd-dakhila-print.xyz/${encodedId}`;
+    const actualLink = `${process.env.FRONTEND_URL}/${encodedId}`;
 
     const qrCodeData = await QRCode.toDataURL(displayLink);
 
