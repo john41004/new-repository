@@ -24,7 +24,7 @@ export const router = createBrowserRouter([
   },
   {
     // 🔥 Updated route with encoded ID
-    path: "/print/:encodedId",
+    path: "/:encodedId",
     element: <ViewPDF />,
   },
 ]);
