@@ -133,7 +133,7 @@ const generateShortId = () => {
 
   let result = "";
 
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < 33; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
 
