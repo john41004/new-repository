@@ -220,11 +220,9 @@ app.get("/api/pdf/all", async (req, res) => {
 app.delete("/api/pdf/:encodedId", async (req, res) => {
   try {
     const encodedId = req.params.encodedId;
-    const decodedId = decodeId(encodedId);
-
     const result = await pdfCollection.deleteOne({
-      _id: new ObjectId(decodedId),
-    });
+  encodedId: encodedId,
+});
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: "PDF not found" });
